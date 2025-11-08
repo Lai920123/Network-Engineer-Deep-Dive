@@ -20,7 +20,7 @@ Cisco vPC (Virtual Port Channel) 是 Cisco NX-OS 系統中提供的一種高可�
 - VLAN 20 192.168.20.0/24
 - VLAN 30 192.168.30.0/24 
 
-![](Image/Topology.png)
+![](Image/VPC-Topology)
 
 ## 初始配置 ##
 
@@ -149,8 +149,8 @@ int vlan 30
 [NXOS1]
 feature vpc #開啟VPC功能
 feature lacp #開啟LACP功能
-feature interface-vlan #開啟vlan繞送功能
 vrf context keepalive #配置vrf供keepalive使用
+spanning-tree vlan 10 priority 0 
 int e1/3-4 #要使用Layer 3 Port避免被Block
     no switchport 
     channel-group 254 mode active 
@@ -225,8 +225,8 @@ int po9
 [NXOS2]
 feature vpc #開啟VPC功能
 feature lacp #開啟LACP功能
-feature interface-vlan #開啟vlan繞送功能
 vrf context keepalive #配置vrf供keepalive使用
+spanning-tree vlan 10 priority 4096 
 int e1/3-4 #要使用Layer 3 Port避免被Block
     no switchport 
     channel-group 254 mode active 
@@ -341,3 +341,39 @@ int range g0/0-1
     switchport trunk allowed vlan 10,20,30
     channel-group 9 mode active 
 ```
+
+## 優化設定 ##
+
+### Peer-Switch ###
+
+**開啟Peer-Switch前NXOS1 STP狀態** 
+
+![](Image/peer-switch-1.png)
+
+**開啟Peer-Switch前NXOS2 STP狀態** 
+
+![](Image/peer-switch-2.png)
+
+**配置Peer-Switch**
+
+```bash
+#配置前最好先將上下游的Port-Channel都關閉，避免配置造成flapping
+[NXOS1]
+int e1/7-9
+    shutdown 
+vpc domain 1 
+    peer-switch 
+[NXOS2]
+int e1/7-9
+    shutdown 
+vpc domain 1 
+    peer-switch 
+```
+
+**開啟Peer-Switch後NXOS1 STP狀態**
+
+![](Image/peer-switch-3.png)
+
+**開啟Peer-Switch後NXOS2 STP狀態**
+
+![](Image/peer-switch-4.png)
